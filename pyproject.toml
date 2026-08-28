@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "harlequin-odbc-vertica"
+version = "0.1.0"
+description = "A Harlequin adapter for Vertica via ODBC, fixing catalog and column metadata issues."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "zero" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Database",
+    "Topic :: Database :: Front-Ends",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "harlequin>=1.25,<3",
+    "harlequin-odbc>=0.4.0",
+]
+
+[project.urls]
+Repository = "https://github.com/zero/harlequin-odbc-vertica"
+
+[project.entry-points."harlequin.adapter"]
+odbc-vertica = "harlequin_odbc_vertica:HarlequinOdbcVerticaAdapter"
