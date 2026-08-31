@@ -4,18 +4,24 @@ build-backend = "hatchling.build"
 
 [project]
 name = "harlequin-odbc-vertica"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Harlequin adapter for Vertica via ODBC, fixing catalog and column metadata issues."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [{ name = "clang-engineer" }]
+keywords = ["database", "harlequin", "odbc", "sql", "vertica"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Topic :: Database",
   "Topic :: Database :: Front-Ends",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
 ]
@@ -23,6 +29,7 @@ dependencies = ["harlequin>=1.25,<3", "harlequin-odbc>=0.4.0"]
 
 [project.urls]
 Repository = "https://github.com/clang-engineer/harlequin-odbc-vertica"
+Issues = "https://github.com/clang-engineer/harlequin-odbc-vertica/issues"
 
 [project.entry-points."harlequin.adapter"]
 odbc-vertica = "harlequin_odbc_vertica:HarlequinOdbcVerticaAdapter"

@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  release-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v10.0.1
+      - name: Build distributions
+        run: uv build --no-sources
+      - name: Check distribution metadata
+        run: uvx twine check dist/*
+      - name: Verify wheel entry point
+        run: uvx --isolated --from ./dist/harlequin_odbc_vertica-0.1.1-py3-none-any.whl harlequin --version | grep -F "odbc-vertica, version 0.1.1"

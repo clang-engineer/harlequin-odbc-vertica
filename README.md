@@ -1,5 +1,8 @@
 # harlequin-odbc-vertica
 
+[![PyPI](https://img.shields.io/pypi/v/harlequin-odbc-vertica)](https://pypi.org/project/harlequin-odbc-vertica/)
+[![CI](https://github.com/clang-engineer/harlequin-odbc-vertica/actions/workflows/ci.yml/badge.svg)](https://github.com/clang-engineer/harlequin-odbc-vertica/actions/workflows/ci.yml)
+
 A [Harlequin](https://harlequin.sh) adapter for [Vertica](https://www.vertica.com/) via ODBC.
 
 This adapter extends `harlequin-odbc` to fix Vertica-specific issues with catalog and column metadata retrieval.
