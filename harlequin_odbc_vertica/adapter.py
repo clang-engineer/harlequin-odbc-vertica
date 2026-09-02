@@ -6,7 +6,7 @@ from harlequin import HarlequinAdapter, HarlequinCursor
 from harlequin_odbc.adapter import HarlequinOdbcAdapter, HarlequinOdbcConnection
 
 from harlequin_odbc.catalog import (
-    DatabaseCatalogItem,
+    DatabaseCatalogItem as OdbcDatabaseCatalogItem,
     RelationCatalogItem,
     SchemaCatalogItem,
 )
@@ -15,6 +15,12 @@ from harlequin.catalog import Catalog, CatalogItem
 from harlequin.exception import HarlequinConnectionError
 
 import pyodbc
+
+
+class DatabaseCatalogItem(OdbcDatabaseCatalogItem):
+    """A Vertica database node without unsupported database actions."""
+
+    INTERACTIONS = None
 
 
 class HarlequinOdbcVerticaConnection(HarlequinOdbcConnection):
@@ -52,6 +58,39 @@ class HarlequinOdbcVerticaConnection(HarlequinOdbcConnection):
         cur = self.aux_conn.cursor()
         raw_cols = cur.columns(table=rel_name, schema=schema_name)
         return [(col[3], col[5]) for col in raw_cols]
+
+    def get_catalog(self) -> Catalog:
+        raw_catalog = self._list_tables()
+        db_items: list[CatalogItem] = []
+        for db, schemas in raw_catalog.items():
+            schema_items: list[CatalogItem] = []
+            for schema, relations in schemas.items():
+                rel_items = [
+                    RelationCatalogItem.from_label(
+                        label=rel,
+                        schema_label=schema,
+                        db_label=db,
+                        rel_type=rel_type,
+                        connection=self,
+                    )
+                    for rel, rel_type in relations
+                ]
+                schema_items.append(
+                    SchemaCatalogItem.from_label(
+                        label=schema,
+                        db_label=db,
+                        connection=self,
+                        children=rel_items,
+                    )
+                )
+            db_items.append(
+                DatabaseCatalogItem.from_label(
+                    label=db,
+                    connection=self,
+                    children=schema_items,
+                )
+            )
+        return Catalog(items=db_items)
 
 
 class HarlequinOdbcVerticaAdapter(HarlequinOdbcAdapter):
