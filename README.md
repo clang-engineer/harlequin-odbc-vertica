@@ -102,6 +102,42 @@ in `odbc.ini` is not required when passing a full connection string. After
 registration, rerun `odbcinst -q -d` and check that the library path exists.
 Listing a driver confirms its registration, not that it can load or connect.
 
+### macOS with Homebrew unixODBC
+
+The macOS Vertica `.pkg` may register its driver in `/etc/odbcinst.ini`,
+while Homebrew unixODBC reads `/opt/homebrew/etc/odbcinst.ini` on Apple
+Silicon. If `odbcinst -j` points there and `odbcinst -q -d` does not show
+`[Vertica]`, register the installed
+`/Library/Vertica/ODBC/lib/libverticaodbc.dylib` in Homebrew's
+`odbcinst.ini` using the `[Vertica]` section above.
+
+Registration alone may still leave `SQLDriverConnect` failing with
+`('H000', '[H000] [ (50404) (SQLDriverConnect)')`: the vendor's default
+`vertica.ini` uses iODBC (`UTF-32`), whereas Homebrew `pyodbc` uses
+unixODBC. Run `mkdir -p ~/.config/vertica` and create
+`~/.config/vertica/vertica.ini` with:
+
+```ini
+[Driver]
+ErrorMessagesPath=/Library/Vertica/ODBC/messages/
+ODBCInstLib=/opt/homebrew/lib/libodbcinst.2.dylib
+DriverManagerEncoding=UTF-16
+```
+
+Launch Harlequin with the example profile below and the new file:
+
+```sh
+export VERTICAINI="$HOME/.config/vertica/vertica.ini"
+harlequin -P vertica
+```
+
+This avoids editing the root-owned vendor file. Check that the configured
+path exists. On other architectures or Homebrew prefixes, use the actual
+path to the installed unixODBC library. Check the
+fix by launching Harlequin with a valid profile: a listed driver or a
+successful `isql` test alone does not prove Python's Unicode ODBC path
+works.
+
 ## Usage
 
 With a reachable Vertica server and valid credentials:
@@ -136,6 +172,8 @@ Replace the placeholders locally, restrict the file with
   driver is missing, unregistered, or points to a library that cannot be
   loaded. Check `odbcinst -j`, `odbcinst -q -d`, the `Driver` path, and the
   library's architecture (`file /absolute/path/to/installed/library`).
+- **`H000` / `50404` after registering the driver on macOS**: check
+  [`VERTICAINI` and Homebrew unixODBC encoding](#macos-with-homebrew-unixodbc).
 - **Connection/authentication error after the driver loads**: check the
   server, port, database, credentials, and network access; registering a
   driver does not establish a database connection.
