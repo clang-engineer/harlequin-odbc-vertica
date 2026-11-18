@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "harlequin-odbc-vertica"
-version = "0.1.1"
+version = "0.1.2"
 description = "A Harlequin adapter for Vertica via ODBC, fixing catalog and column metadata issues."
 readme = "README.md"
 license = "MIT"
