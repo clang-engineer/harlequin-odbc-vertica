@@ -29,14 +29,12 @@ class HarlequinOdbcVerticaConnection(HarlequinOdbcConnection):
     def _list_tables(self) -> dict[str, dict[str, list[tuple[str, str]]]]:
         cur = self.aux_conn.cursor()
         catalog: dict[str, dict[str, list[tuple[str, str]]]] = {}
-        default_db: str | None = None
+        # Vertica cannot execute another query while SQLTables is streaming.
+        cur.execute("SELECT current_database()")
+        default_db = cur.fetchone()[0]
 
         for db_name, schema_name, rel_name, rel_type, *_ in cur.tables(catalog="%"):
             if db_name is None:
-                if default_db is None:
-                    cur2 = self.aux_conn.cursor()
-                    cur2.execute("SELECT current_database()")
-                    default_db = cur2.fetchone()[0]
                 db_name = default_db
 
             if db_name not in catalog:

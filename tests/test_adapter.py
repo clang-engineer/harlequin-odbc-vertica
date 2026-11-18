@@ -22,3 +22,36 @@ class GetCatalogTest(TestCase):
             database.children[0].children[0].query_name,
             '"CDW"."FT_CRE_APACHE"',
         )
+
+
+class ListTablesTest(TestCase):
+    def test_missing_database_names_with_single_active_result(self) -> None:
+        class SingleResultConnection:
+            streaming_tables = False
+
+            def cursor(self):
+                return self
+
+            def execute(self, query):
+                if self.streaming_tables:
+                    raise RuntimeError("Cannot query while SQLTables is active")
+                return self
+
+            def fetchone(self):
+                return ("demo",)
+
+            def tables(self, **kwargs):
+                self.streaming_tables = True
+                try:
+                    yield (None, "public", "orders", "TABLE")
+                    yield (None, "public", "order_summary", "VIEW")
+                finally:
+                    self.streaming_tables = False
+
+        connection = object.__new__(HarlequinOdbcVerticaConnection)
+        connection.aux_conn = SingleResultConnection()
+
+        self.assertEqual(
+            connection._list_tables(),
+            {"demo": {"public": [("orders", "TABLE"), ("order_summary", "VIEW")]}},
+        )

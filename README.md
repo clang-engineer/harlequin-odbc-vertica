@@ -18,7 +18,7 @@ The standard `harlequin-odbc` adapter has two issues when used with Vertica:
 
 `harlequin-odbc-vertica` overrides two methods in the ODBC adapter:
 
-- `_list_tables`: Uses `SELECT current_database()` as a fallback when the catalog name is `None`.
+- `_list_tables`: Resolves `SELECT current_database()` before streaming `SQLTables` metadata, then uses it when the catalog name is `None`. Vertica cannot execute another query on the same connection while that metadata result is active.
 - `_list_columns_in_relation`: Omits the `catalog` parameter when calling `pyodbc.Cursor.columns()`.
 
 ## Installation
@@ -179,6 +179,11 @@ Replace the placeholders locally, restrict the file with
   driver does not establish a database connection.
 - **Empty catalog or column metadata errors with `-a odbc`**: use
   `-a odbc-vertica`, which applies the Vertica-specific metadata fixes.
+- **Catalog error `(20)` executing `SELECT current_database()`**: older
+  adapter builds issue this query while iterating `SQLTables` on the same
+  connection. Install a build containing the cursor-ordering fix into
+  Harlequin's Python environment and restart Harlequin. This source resolves
+  the database name before starting the table metadata result.
 
 ## License
 
